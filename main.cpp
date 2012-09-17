@@ -157,7 +157,7 @@ void DisplayCallback()
     static bool first=true;
     if (first)
     {
-        appEval((char*)string("(pre-process-run '("+LoadFile("../assets/startup.scm")+"))").c_str());
+        appEval((char*)string("(pre-process-run '("+LoadFile("material/startup.scm")+"))").c_str());
         printf("running script\n");
         first=false;
     }
@@ -167,7 +167,7 @@ void KeyboardCallback(unsigned char key,int x, int y)
 {
     if (key=='e')
     {
-        appEval((char*)string("(pre-process-run '("+LoadFile("../assets/startup.scm")+"))").c_str());
+        appEval((char*)string("(pre-process-run '("+LoadFile("material/startup.scm")+"))").c_str());
     }
 }
 
@@ -244,17 +244,17 @@ int main(int argc, char *argv[])
 
     appInit();
 
-    appEval((char*)LoadFile("../assets/init.scm").c_str());  
-    appEval((char*)LoadFile("../assets/boot.scm").c_str());
+    appEval((char*)LoadFile("material/init.scm").c_str());  
+    appEval((char*)LoadFile("material/boot.scm").c_str());
 
     long w=0,h=0;
-    unsigned char *tex=LoadPNG("../assets/font.png",w,h);
+    unsigned char *tex=LoadPNG("material/font.png",w,h);
     appLoadTexture("font.png",w,h,(char *)tex);
 
-    tex=LoadPNG("../assets/icons.png",w,h);
+    tex=LoadPNG("material/icons.png",w,h);
     appLoadTexture("icons.png",w,h,(char *)tex);
 
-    tex=LoadPNG("../assets/squib.png",w,h);
+    tex=LoadPNG("material/squib.png",w,h);
     appLoadTexture("squib.png",w,h,(char *)tex);
 
 
