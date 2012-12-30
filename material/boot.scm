@@ -11,7 +11,9 @@
   (if (not (null? frame-thunk))
       (frame-thunk))  
   (set! _touches '())
-  (set! _touching #f))
+  (set! _touching #f)
+  (set! keys-this-frame '())
+  (set! special-keys-this-frame '()))
 
 (define triangles 0)
 (define triangle-strip 1)
@@ -24,6 +26,8 @@
 (define (hint-anti-alias) (hint 5)) 
 (define (hint-bound) (hint 6)) 
 (define (hint-unlit) (hint 7)) 
+(define (hint-ignore-depth) (hint 11)) 
+(define (hint-no-zwrite) (hint 20)) 
 
 ;------------------------------------------------------------
 
@@ -50,6 +54,100 @@
       #t
       (if (zero? _mouse-s) 
           (eqv? _mouse-b n) #f)))
+
+(define keys '())
+(define keys-this-frame '())
+(define special-keys '())
+(define special-keys-this-frame '())
+(define mouse (vector 0 0))
+(define mouse-buttons (vector #f #f #f))
+(define mouse-wheel-v 0)
+(define key-mods '())
+
+; utils funcs for using lists as sets
+(define (set-remove a l)
+  (if (null? l)
+      '()
+      (if (eqv? (car l) a)
+          (set-remove a (cdr l))
+          (cons (car l) (set-remove a (cdr l))))))		  
+
+(define (set-add a l)
+  (if (not (member a l))
+      (cons a l)
+      l))			  
+
+(define (set-contains a l)
+  (if (not (member a l))
+      #f
+      #t))		  
+
+(define (clear-down)
+  (set! keys '()))
+
+(define (register-down key button special state x y mod)
+  (when (not (or (number? key) (eqv? key -1))) ; ordinary keypress
+    (set! keys (set-add key keys))
+	(set! keys-this-frame (set-add key keys-this-frame)))
+  (when (not (eqv? special -1)) ; special keypress
+    (set! special-keys (set-add special special-keys))
+	(set! special-keys-this-frame (set-add special special-keys-this-frame)))
+  ;(set! key-mods ; key modifiers
+ ;	  (for/list ([bitmask (list 1 2 4)]
+;				 [bitsym '(shift ctrl alt)]
+;				 #:when (> (bitwise-and mod bitmask) 0))
+;			bitsym))
+  ;(cond ; mouse
+  ;  ((and (eq? key 0) (eq? special -1)) 
+;	 (when (eq? button 3) (set! mouse-wheel-v 1))
+;	 (when (eq? button 4) (set! mouse-wheel-v -1))
+;     (when (and (eq? state 0)
+;				(< button (vector-length mouse-buttons)))
+;	   (vector-set! mouse-buttons button #t))
+ ;    (when (and (eq? state 1)
+;				(< button (vector-length mouse-buttons)))
+;	   (vector-set! mouse-buttons button #f))
+ ;    (vector-set! mouse 0 x)
+  ;   (vector-set! mouse 1 y)))
+  )
+
+(define (register-up key button special state x y mod)
+  (display keys)(newline)
+  (when (not (eqv? key -1))
+    (set! keys (set-remove key keys)))
+  (when (not (eqv? special -1))
+    (set! special-keys (set-remove special special-keys))))
+
+(define (key-pressed s)
+  (set-contains (car (string->list s)) keys))
+
+(define (keys-down)
+  keys)
+
+(define (key-special-pressed k)
+  (set-contains k special-keys))
+
+(define (keys-special-down)
+  special-keys)
+
+(define (key-modifiers)
+  key-mods)
+
+(define (key-pressed-this-frame s)
+  (set-contains (car (string->list s)) keys-this-frame))
+
+(define (key-special-pressed-this-frame s)
+  (set-contains s special-keys-this-frame))
+
+(define (fluxus-input-callback key button special state x y mod)
+  (register-down key button special state x y mod)
+  ;(input-camera key button special state x y mod width height)
+  )
+
+(define (fluxus-input-release-callback key button special state x y mod)
+  (register-up key button special state x y mod))
+
+
 
 ;------------------------------------------------------------
 

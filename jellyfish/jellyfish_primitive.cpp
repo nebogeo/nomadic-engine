@@ -33,7 +33,7 @@ jellyfish_primitive::~jellyfish_primitive()
 
 void jellyfish_primitive::render(u32 hints)
 {
-    for (int i=0; i<10; i++) m_machine.run();
+    for (int i=0; i<100; i++) m_machine.run();
 //    m_machine.pretty_dump();
 
     // fix up the arrays to only draw the 

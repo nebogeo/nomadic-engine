@@ -42,7 +42,14 @@ void text_primitive::set_text(const char *str)
 	int wrapcount=0;	
     u32 vp=0;
     flx_real z=0;
-    flx_real zm=0.01;
+    flx_real zm=0.0001;
+
+	for (u32 n=0; n<m_size; n++)
+	{
+        m_positions[n].x=0;
+        m_positions[n].y=0;
+        m_positions[n].z=0;
+    }
 
 	for (u32 n=0; n<length; n++)
 	{

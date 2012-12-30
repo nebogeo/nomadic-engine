@@ -1,224 +1,63 @@
-;; ----------------------------------------
-;; j e l l y f i s h
-;; ----------------------------------------
-
-(define NOP 0) (define JMP 1) (define JMZ 2) (define JLT 3) (define JGT 4)
-(define LDL 5) (define LDA 6) (define LDI 7) (define STA 8) (define STI 9)
-(define ADD 10) (define SUB 11) (define MUL 12) (define DIV 13) (define ABS 14)
-(define SIN 15) (define ATN 16) (define DOT 17) (define CRS 18) (define SQR 19)
-(define LEN 20) (define DUP 21) (define CMP 22) (define SHF 23) (define BLD 24)
-(define RET 25)
-
-(define REG_PCO 100) (define REG_SPD 101) (define REG_POS 102) (define REG_VEL 103)
-(define REG_COL 104) (define REG_NIT 105) (define REG_SCC 106) (define REG_SDR 107)
-(define REG_AND 108) (define REG_MDL 120) (define REG_MDL_END 199) (define REG_STP 200)
-(define REG_STK 201) (define REG_NDT 256)
-
-(define (program-jellyfish l)
-  (for-each
-   (lambda (v p)
-     (pdata-set! "p" p v))
-   l (build-list (lambda (i) i) (length l))))
-
-;;----------------------------------------------------------------
-;; interface
-
-; store pinch as it's slow to calculate
-(define pinch 1)
-(define last-touch-pos (vector 0 0 0))
-(define world-pos (vector 0 0 0))
-(define world-zoom 1)
-(define first-zoom #t)
-(define first-move #t)
-
-(define icon-count-x 5)
-(define icon-count-y 10)
-(define icon-width (/ 1 icon-count-x))
-(define icon-height (/ 1 icon-count-y))
-
-(define (icon-tex-coord i)
-  (vector (/ (modulo i icon-count-x) icon-count-x)
-          (/ (quotient i icon-count-x) icon-count-y)
-          0))
-
-(define (build-plane)
-  (let ((p (build-polygons 4 1)))
-    (with-primitive 
-     p
-     (pdata-set! "p" 0 (vector 0 0 0))
-     (pdata-set! "p" 1 (vector 0 1 0))
-     (pdata-set! "p" 2 (vector 1 0 0))
-     (pdata-set! "p" 3 (vector 1 1 0))
-     (pdata-set! "t" 0 (vector 0 0 0))
-     (pdata-set! "t" 1 (vector 0 1 0))
-     (pdata-set! "t" 2 (vector 1 0 0))
-     (pdata-set! "t" 3 (vector 1 1 0))
-     (pdata-map! (lambda (n) (vector 0 0 -1)) "n")
-     (pdata-map! (lambda (n) (vector 1 1 1)) "c"))
-    p))
-
-(define (build-tile value pos)
-  (let ((p (with-state
-            (parent root)
-            (with-state 
-             (translate pos)
-             (hint-unlit)
-             (texture (load-texture "icons.png"))
-             ;;(colour (vector 1 0 0 0.3))
-             (scale (vector 0.9 0.9 1))
-             (build-plane)))))
-    (with-primitive 
-     p
-     (let ((t (icon-tex-coord value)))
-       (pdata-set! "t" 3 t)
-       (pdata-set! "t" 1 (vadd t (vector icon-width 0 0)))
-       (pdata-set! "t" 2 (vadd t (vector 0 icon-height 0)))
-       (pdata-set! "t" 0 (vadd t (vector icon-width icon-height 0)))))
-    p))
-
-(define (build-number value pos)
-  (let ((b (build-tile 0 pos)))
-    (with-state
-     (parent b)
-     (colour (vector 1 1 1))
-     (hint-unlit)
-     (translate (vector 0 0.9 0.2))
-     (scale (vector 0.25 0.25 0.25))
-     (texture (load-texture "font.png"))
-     (build-text (number->string value)))))
-
-(define (build-cell type value pos)
-  (if (eq? type 'number)
-      (build-number value pos)
-      (build-tile value pos)))  
-
-(define (build-cells jelly root)
-  (foldr
-   (lambda (r i)
-     (let ((pos (vsub (vector 0 (- i) 2)
-                      (vector 2 2 0)))
-           (v (with-primitive jelly (pdata-ref "p" i))))
-       (display (pdata-ref "p" i))(newline)
-       (append 
-        (list
-         (build-cell 'cell (inexact->exact (floor (vx v))) pos)
-         (build-cell 'number (vy v) (vadd (vector 1 0 0) pos))
-         (build-cell 'number (vz v) (vadd (vector 2 0 0) pos)))
-         r)))
-    '()
-    (build-list (lambda (i) i) 10)))
-  
-(define (check-objs root l fn)
-  (let* ((line (get-line-from-mouse))
-         (s (with-primitive 
-             root 
-             (get-line-intersect (car line) (cadr line)))))
-    (when (not (zero? s))
-          (fn s))))
-
-(define (update-input root objs fn)
-  (if (eqv? (length (get-touch-ids)) 1)
-      (begin
-        (let* ((ppos (vmul 
-                      (get-point-from-touch 
-                       (car (get-touch-ids)))
-                      (/ 0.2 world-zoom)))
-               (pos (vector (vx ppos) (vy ppos) 0)))
-          (if (not first-move)
-              (set! world-pos (vadd world-pos
-                                    (vsub pos last-touch-pos)))
-              (check-objs root objs fn))
-          (set! last-touch-pos pos))
-        (set! first-move #f))
-      (set! first-move #t))
-  
-  (if (> (length (get-touch-ids)) 1)
-      (begin
-        (let ((p (* (vdist 
-                     (get-point-from-touch (car (get-touch-ids)))
-                     (get-point-from-touch (cadr (get-touch-ids))))
-                    0.1)))
-          (when (not first-zoom)
-                (set! world-zoom (+ world-zoom (- p pinch))))
-          (when (< world-zoom 0.1) (set! world-zoom 0.1))
-          (set! pinch p)
-          (set! first-zoom #f)
-          ))
-      (set! first-zoom #t))
-  
-  (with-primitive
-   root
-   (identity)
-   (scale (vector world-zoom world-zoom world-zoom))
-   (translate world-pos)))
-
-;;----------------------------------------------------------------
-
 (clear)
 
-(define root (with-state
-              ;(translate (vector 1 2 3))
-              (build-locator)))
+(define t (with-state
+           (texture (load-texture "font.png"))
+           (hint-unlit)
+           (colour (vector 1 1 1))
+           (translate (vector -1 0.5 8))
+           (scale (vector 0.07 0.07 1))
+;           (hint-ignore-depth) 
+;           (hint-no-zwrite) 
+           (build-text "                                                                                                                                                                                                    ")))
 
-(clear-colour (vector 0.4 0.2 0))
-(colour (vector 1 0 0))
-;(hint-unlit)
+;(clear-colour (vector 1 1 1))
 
-(define jelly (build-jellyfish))
+(define (print msg)
+  (with-primitive 
+   t (set-text msg)))
 
-(with-primitive jelly
- (program-jellyfish
-  (list
- ; data
-   (vector 0 0 0)         ; time (increases by 1 each loop)
-   (vector 2 2 -3)        ; shuffle data for converting (x y z) -> (z z x)
- ; code follows to build a vertex by rotation around an angle based on the index
-   (vector LDA 0 0)       ; load current time from address 0
-   (vector LDL 135.3 0)   ; load angle 135.3 (in degrees)
-   (vector MUL 0 0)       ; multiply time by angle
-   (vector SIN 0 0)       ; makes (sin(angle) cos(angle) 0)
- ; make a spiral by scaling up with time
-   (vector LDA 0 0)       ; load time again
-   (vector LDL 0.05 0)    ; load 0.05
-   (vector MUL 0 0)       ; multiply to get time*0.05
-   (vector MUL 0 0)       ; mul rotation vector by time*0.05
- ; move backward in z so we get some depth
-   (vector LDA 0 0)       ; load the time again
-   (vector LDL 0.03)      ; load 0.03
-   (vector MUL 0 0)       ; multiply the time by 0.01
-   (vector LDA 1 0)       ; load the shuffle vec from address 1 
-   (vector SHF 0 0)       ; shuffle the x to z position
-   (vector ADD 0 0)       ; add (0 0 x) to set z on current position
-   (vector STI 0 REG_MDL) ; write position to model memory registers
- ; increment the index by 1
-   (vector LDA 0 0)       ; load address
-   (vector LDL 1 0)       ; load inc
-   (vector ADD 0 0)       ; add them together
-   (vector STA 0 0)       ; store at address loc
-   (vector JMP 2 0)))     ; goto 2
- 
- (pdata-map! 
-  (lambda (c)
-    (rndvec)) 
-  "c")
- (hint-unlit)
- (hint-wire)
- (line-width 3))
+(define all_characters (string->list "abcdefghijklmnopqrstuvwxyz 1234567890()[]{}+-=<>/!@#$%^&*|"))
+(define my_text "
+(define (build n)
+  (when (not (zero? n))
+    (rotate (vector 45 45 40))
+    (with-state
+      (scale (vector 3 0.1 0.1))
+      (build-cube))
+    (build (- n 1))))
 
-(with-primitive 
- jelly
- (translate (vector -1.3 1.4 0))
- (rotate (vector -40 -20 2)))
+(build 20)")
 
-;;----------------------------------------------------------------
+(define (eval-string input)
+  (pre-process-run (read (open-input-string (string-append "(" input ")")))))
 
-(define cells (build-cells jelly root))
+(define (keyb-out)
+  (let ((output '()))
+    (map (lambda (x)
+           (when (key-pressed-this-frame (string x))
+                 (set! output (cons (string x) output))))
+         all_characters)
+    output))
 
-(define (render)
-    (update-input 
-     root
-     cells
-     (lambda (o)
-       (with-primitive o (colour (rndvec))))))
-                   
-(every-frame (render))
+(define (typing)
+  (let ((newchars (keyb-out)))
+    (for-each
+     (lambda (x)
+       (display x)(newline)
+       (set! my_text (string-append my_text x)))
+     newchars))
+  
+  (when (and (key-pressed-this-frame (string #\backspace))
+             (> (string-length my_text) 0))
+        (set! my_text (substring my_text 0 (- (string-length my_text) 1))))
+  (when (key-pressed-this-frame (string #\return))
+        (set! my_text (string-append my_text "\n")))
+  (when (key-special-pressed-this-frame 1) 
+        (eval-string my_text))
+  (when (> (string-length my_text) 0)
+      (print my_text)
+      ))
+
+(every-frame
+ (typing))
+

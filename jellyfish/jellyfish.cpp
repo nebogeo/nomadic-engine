@@ -127,7 +127,14 @@ void jellyfish::run()
         vec3 v=pop();
         push(v*(float)m.x);
     } break;
-	case DIV: push(pop()/(float)pop().x); break;
+	case DIV: { 
+        float v=(float)pop().x;
+        if (v!=0) {
+            push(pop()/v); 
+        } else {
+            push(vec3(0,0,0));
+        }
+    } break;
 	case ABS: { vec3 t=pop(); push(vec3(fabs((float)t.x),
                                         fabs((float)t.y),
                                         fabs((float)t.z))); } break;

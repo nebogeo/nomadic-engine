@@ -51,7 +51,7 @@ int scenegraph::add(int pid, scenenode *node)
 		scenenode *parent=find(pid);
 		if (!parent) parent=m_root;
 		node->m_id=m_current_id++;
-		parent->m_children.add_to_end(node);
+		parent->m_children.add_to_front(node);
 		node->m_parent=parent;	
         return node->m_id;
     }
@@ -164,6 +164,12 @@ void scenegraph::render_node_walk(scenenode *node, int depth)
     if (node->m_hints&HINT_UNLIT) glDisable(GL_LIGHTING);
     else glEnable(GL_LIGHTING);
     glLineWidth(node->m_line_width);
+	if (node->m_hints&HINT_NOZWRITE) glDepthMask(false);
+    else glDepthMask(true);
+	if (node->m_hints&HINT_IGNORE_DEPTH) glDisable(GL_DEPTH_TEST);
+    else glEnable(GL_DEPTH_TEST);
+
+    glEnable(GL_NORMALIZE);
 
 #endif
     if (node->m_texture!=0)

@@ -30,6 +30,7 @@ using namespace std;
 
 int w,h=0;
 int gAppAlive = 1;
+int modifiers = 0;
 
 unsigned char* LoadPNG(const string filename,long &width, long &height)
 {
@@ -163,13 +164,55 @@ void DisplayCallback()
     }
 }
 
+static const string INPUT_CALLBACK="fluxus-input-callback";
+static const string INPUT_RELEASE_CALLBACK="fluxus-input-release-callback";
+
 void KeyboardCallback(unsigned char key,int x, int y)
 {
-    if (key=='e')
-    {
-        appEval((char*)string("(pre-process-run '("+LoadFile("material/startup.scm")+"))").c_str());
-    }
+	int mod=modifiers;
+	char code[256];
+    mod=glutGetModifiers();
+	if (key > 0 && key<0x80)
+	{ // key is 0 on ctrl+2 and ignore extended ascii for the time being
+		int imod = 0;
+		if (mod & GLUT_ACTIVE_SHIFT)
+			imod |= 1;
+		if (mod & GLUT_ACTIVE_CTRL)
+			imod |= 2;
+		if (mod & GLUT_ACTIVE_ALT)
+			imod |= 4;
+
+		sprintf(code,"(%s #\\%c %d %d %d %d %d %d)",INPUT_CALLBACK.c_str(),key,-1,-1,-1,x,y,imod);
+        appEval(code);
+	}
 }
+
+void KeyboardUpCallback(unsigned char key,int x, int y)
+{
+	char code[256];
+	if (key > 0 && key<0x80) 
+    { // key is 0 on ctrl+2
+		sprintf(code,"(%s #\\%c %d %d %d %d %d %d)",INPUT_RELEASE_CALLBACK.c_str(),key,-1,-1,-1,x,y,0);
+        appEval(code);
+	}
+}
+
+void SpecialKeyboardCallback(int key,int x, int y)
+{
+	int mod=modifiers;
+	char code[256];
+	sprintf(code,"(%s %d %d %d %d %d %d %d)",INPUT_CALLBACK.c_str(),0,-1,key,-1,x,y,mod);
+    appEval(code);
+}
+
+void SpecialKeyboardUpCallback(int key,int x, int y)
+{
+	//app->Handle( 0, 0, key, 1, x, y);
+	char code[256];
+	sprintf(code,"(%s %d %d %d %d %d %d %d)",INPUT_RELEASE_CALLBACK.c_str(),0,-1,key,-1,x,y,0);
+    appEval(code);
+}
+
 
 void glTranslatex(GLfixed x, GLfixed y, GLfixed z)
 {
@@ -225,14 +268,16 @@ void glMultMatrixx( GLfixed * mat )
 
 int main(int argc, char *argv[])
 {
+
 	unsigned int flags = GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH|GLUT_STENCIL;
 
 	// init OpenGL
 	glutInit(&argc,argv);
-	glutInitWindowSize(480,800);
+//	glutInitWindowSize(480,800);
+	glutInitWindowSize(640,480);
 	glutInitDisplayMode(flags);
 	char windowtitle[256];
-	sprintf(windowtitle,"nomadic android scratchpad");
+	sprintf(windowtitle,"fluxus raspberry pi scratchpad");
 	glutCreateWindow(windowtitle);
 	glutDisplayFunc(DisplayCallback);
 	glutReshapeFunc(ReshapeCallback);
@@ -241,6 +286,9 @@ int main(int argc, char *argv[])
 	glutPassiveMotionFunc(PassiveMotionCallback);
 	glutIdleFunc(IdleCallback);
 	glutKeyboardFunc(KeyboardCallback);
+	glutSpecialFunc(SpecialKeyboardCallback);
+	glutKeyboardUpFunc(KeyboardUpCallback);
+	glutSpecialUpFunc(SpecialKeyboardUpCallback);
 
     appInit();
 

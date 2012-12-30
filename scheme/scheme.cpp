@@ -1175,6 +1175,8 @@ static pointer mk_sharp_const(scheme *sc, char *name) {
                c='\n';
           } else if(stricmp(name+1,"return")==0) {
                c='\r';
+          } else if(stricmp(name+1,"backspace")==0) {
+               c='\b';
           } else if(stricmp(name+1,"tab")==0) {
                c='\t';
      } else if(name[1]=='x' && name[2]!=0) {
@@ -1963,6 +1965,8 @@ static void atom2str(scheme *sc, pointer l, int f, char **pp, int *plen) {
                     snprintf(p,STRBUFFSIZE,"#\\newline"); break;
                case '\r':
                     snprintf(p,STRBUFFSIZE,"#\\return"); break;
+               case '\b':
+                    snprintf(p,STRBUFFSIZE,"#\\backspace"); break;
                case '\t':
                     snprintf(p,STRBUFFSIZE,"#\\tab"); break;
                default:
