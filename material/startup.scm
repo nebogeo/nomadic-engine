@@ -1,16 +1,18 @@
 (clear)
 
+(display "hello")(newline)
+
 (define t (with-state
            (texture (load-texture "font.png"))
            (hint-unlit)
-           (colour (vector 1 1 1))
+           (colour (vector 1 0.3 0.4))
            (translate (vector -1 0.5 8))
            (scale (vector 0.07 0.07 1))
 ;           (hint-ignore-depth) 
 ;           (hint-no-zwrite) 
-           (build-text "                                                                                                                                                                                                    ")))
+           (build-text "                                                                                                                                                                                                                                                              ")))
 
-;(clear-colour (vector 1 1 1))
+(clear-colour (vector 1 1 1))
 
 (define (print msg)
   (with-primitive 
@@ -20,13 +22,15 @@
 (define my_text "
 (define (build n)
   (when (not (zero? n))
-    (rotate (vector 45 45 40))
+    (rotate (vector 45 130 (* n 40)))
+    (texture (load-texture \"squib.png\"))
     (with-state
-      (scale (vector 3 0.1 0.1))
+      (translate (vector 4 0 0))
+      (scale (vector 1 .5 .1))
       (build-cube))
     (build (- n 1))))
 
-(build 20)")
+(build 50)")
 
 (define (eval-string input)
   (pre-process-run (read (open-input-string (string-append "(" input ")")))))
@@ -58,6 +62,9 @@
       (print my_text)
       ))
 
-(every-frame
- (typing))
+(colour (vector 1 1 1))
+
+(eval-string my_text)
+
+(every-frame(typing))
 

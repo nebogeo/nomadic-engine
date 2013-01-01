@@ -26,6 +26,25 @@
 #include "core/fixed.h"
 #include "app.h"
 
+#ifdef FLX_RPI
+#include <assert.h>
+#include "bcm_host.h"
+
+typedef struct
+{
+   uint32_t screen_width;
+   uint32_t screen_height;
+// OpenGL|ES objects
+   EGLDisplay display;
+   EGLSurface surface;
+   EGLContext context;
+} RPI_STATE_T;
+
+static volatile int terminate_prog;
+static RPI_STATE_T _state, *state=&_state;
+
+#endif
+
 using namespace std;
 
 int w,h=0;
@@ -152,15 +171,21 @@ void PassiveMotionCallback(int x, int y)
 
 void DisplayCallback()
 {   
-    appRender(0, w, h);
-	glutSwapBuffers();
 
-    static bool first=true;
-    if (first)
+#ifdef FLX_RPI  
+  appRender(0, state->screen_width, state->screen_height);
+  eglSwapBuffers(state->display, state->surface);
+#else
+  appRender(0, w, h);
+  glutSwapBuffers();
+#endif
+
+  static bool first=true;
+  if (first)
     {
-        appEval((char*)string("(pre-process-run '("+LoadFile("material/startup.scm")+"))").c_str());
-        printf("running script\n");
-        first=false;
+      appEval((char*)string("(pre-process-run '("+LoadFile("material/startup.scm")+"))").c_str());
+      printf("running script\n");
+      first=false;
     }
 }
 
@@ -213,6 +238,7 @@ void SpecialKeyboardUpCallback(int key,int x, int y)
     appEval(code);
 }
 
+#ifndef FLX_RPI
 
 void glTranslatex(GLfixed x, GLfixed y, GLfixed z)
 {
@@ -266,10 +292,109 @@ void glMultMatrixx( GLfixed * mat )
     glMultMatrixf(m);
 }
 
+#endif // FLX_RPI
+
+#ifdef FLX_RPI
+
+static void init_ogl_rpi(RPI_STATE_T *state)
+{
+   int32_t success = 0;
+   EGLBoolean result;
+   EGLint num_config;
+
+   static EGL_DISPMANX_WINDOW_T nativewindow;
+
+   DISPMANX_ELEMENT_HANDLE_T dispman_element;
+   DISPMANX_DISPLAY_HANDLE_T dispman_display;
+   DISPMANX_UPDATE_HANDLE_T dispman_update;
+   VC_RECT_T dst_rect;
+   VC_RECT_T src_rect;
+
+   static const EGLint attribute_list[] =
+   {
+      EGL_RED_SIZE, 8,
+      EGL_GREEN_SIZE, 8,
+      EGL_BLUE_SIZE, 8,
+      EGL_ALPHA_SIZE, 8,
+      EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+      EGL_NONE
+   };
+   
+   EGLConfig config;
+
+   // get an EGL display connection
+   state->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+   assert(state->display!=EGL_NO_DISPLAY);
+
+   // initialize the EGL display connection
+   result = eglInitialize(state->display, NULL, NULL);
+   assert(EGL_FALSE != result);
+
+   // get an appropriate EGL frame buffer configuration
+   result = eglChooseConfig(state->display, attribute_list, &config, 1, &num_config);
+   assert(EGL_FALSE != result);
+
+   // create an EGL rendering context
+   state->context = eglCreateContext(state->display, config, EGL_NO_CONTEXT, NULL);
+   assert(state->context!=EGL_NO_CONTEXT);
+
+   // create an EGL window surface
+   success = graphics_get_display_size(0 /* LCD */, &state->screen_width, &state->screen_height);
+   assert( success >= 0 );
+
+   dst_rect.x = 0;
+   dst_rect.y = 0;
+   dst_rect.width = state->screen_width;
+   dst_rect.height = state->screen_height;
+      
+   src_rect.x = 0;
+   src_rect.y = 0;
+   src_rect.width = state->screen_width << 16;
+   src_rect.height = state->screen_height << 16;        
+
+   dispman_display = vc_dispmanx_display_open( 0 /* LCD */);
+   dispman_update = vc_dispmanx_update_start( 0 );
+         
+   dispman_element = vc_dispmanx_element_add ( dispman_update, dispman_display,
+      0/*layer*/, &dst_rect, 0/*src*/,
+					       &src_rect, DISPMANX_PROTECTION_NONE, 0 /*alpha*/, 0/*clamp*/, 0/*transform*/);
+      
+   nativewindow.element = dispman_element;
+   nativewindow.width = state->screen_width;
+   nativewindow.height = state->screen_height;
+   vc_dispmanx_update_submit_sync( dispman_update );
+      
+   state->surface = eglCreateWindowSurface( state->display, config, &nativewindow, NULL );
+   assert(state->surface != EGL_NO_SURFACE);
+
+   // connect the context to the surface
+   result = eglMakeCurrent(state->display, state->surface, state->surface, state->context);
+   assert(EGL_FALSE != result);
+
+   // Set background color and clear buffers
+   //glClearColor(0.15f, 0.25f, 0.35f, 1.0f);
+   //glClear( GL_COLOR_BUFFER_BIT );
+   //glClear( GL_DEPTH_BUFFER_BIT );
+   //glShadeModel(GL_FLAT);
+
+   // Enable back face culling.
+   // glEnable(GL_CULL_FACE);
+}
+
+#endif
+
 int main(int argc, char *argv[])
 {
+#ifdef FLX_RPI
+   bcm_host_init();
+   
+   // Clear application state
+   memset( state, 0, sizeof( *state ) );
 
-	unsigned int flags = GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH|GLUT_STENCIL;
+   init_ogl_rpi(state);
+#else
+
+	unsigned int flags = GLUT_DOUBLE|GLUT_RGBA|GLUT_DEPTH;
 
 	// init OpenGL
 	glutInit(&argc,argv);
@@ -290,6 +415,8 @@ int main(int argc, char *argv[])
 	glutKeyboardUpFunc(KeyboardUpCallback);
 	glutSpecialUpFunc(SpecialKeyboardUpCallback);
 
+#endif
+
     appInit();
 
     appEval((char*)LoadFile("material/init.scm").c_str());  
@@ -305,8 +432,15 @@ int main(int argc, char *argv[])
     tex=LoadPNG("material/squib.png",w,h);
     appLoadTexture("squib.png",w,h,(char *)tex);
 
-
+#ifdef FLX_RPI
+  while (!terminate_prog)
+   {
+      //usleep(5*1000);
+     DisplayCallback();
+   }
+#else
 	glutMainLoop();
+#endif
 
 	return 0;
 }

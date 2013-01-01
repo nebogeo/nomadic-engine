@@ -483,7 +483,7 @@ void engine::render()
 	glEnable(GL_LIGHT0);
     buf[0]=0.1f; buf[1]=0.1f; buf[2]=0.1f;  buf[3]=1.f; 
 	glLightxv(GL_LIGHT0, GL_AMBIENT, (GLfixed *)buf);
-    buf[0]=0.1f; buf[1]=0.5f; buf[2]=0.5f;  buf[3]=1.f; 
+    buf[0]=0.5f; buf[1]=0.5f; buf[2]=0.5f;  buf[3]=1.f; 
 	glLightxv(GL_LIGHT0, GL_DIFFUSE, (GLfixed *)buf);
     buf[0]=1.0f; buf[1]=1.0f; buf[2]=1.0f;  buf[3]=1.1f; 
 	glLightxv(GL_LIGHT0, GL_SPECULAR, (GLfixed *)buf);

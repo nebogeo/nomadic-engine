@@ -27,6 +27,14 @@
 
 #ifndef _EE
 
+#ifdef FLX_RPI
+#include <GLES/gl.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <GLES/glutes.h>
+#endif // FLX_RPI
+
+
 #ifdef FLX_LINUX
 
 #ifdef WIN32

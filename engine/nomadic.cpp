@@ -52,7 +52,11 @@ void appInit()
     #ifdef FLX_LINUX
     FILE *log_file=stdout;
     #else
+    #ifdef FLX_RPI
+    FILE *log_file=stdout;
+    #else
     FILE *log_file=fopen("/sdcard/nomadic-log.txt","w");
+    #endif
     #endif
     if (log_file!=NULL) scheme_set_output_port_file(sc, log_file);
 }
