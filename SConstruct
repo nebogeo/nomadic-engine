@@ -1,14 +1,18 @@
-env = Environment(CCFLAGS='-O0 -ggdb -Wno-write-strings -fpermissive')
+env = Environment(CCFLAGS='-O3 -ggdb -Wno-write-strings -fpermissive')
 env.Append(CPPPATH = '.')
-env.Append(LIBS = ['glut', 'GL', 'png'])
-env.Append(CCFLAGS=' -DFLX_LINUX')
 
-# raspberry pi
-#env.Append(LIBS = ['glutes', 'GLESv1_CM', 'EGL', 'bcm_host', 'X11', 'png'])
-#env.Append(CCFLAGS=' -DFLX_RPI')
-#env.Append(CPPPATH = '/opt/vc/include:.')
-#env.Append(LIBPATH = '/opt/vc/lib')
+target = ARGUMENTS.get('TARGET','LINUX')
 
+if target=='LINUX':
+   env.Append(LIBS = ['glut', 'GL', 'png'])
+   env.Append(CCFLAGS=' -DFLX_LINUX')
+
+if target=='RPI':
+   # raspberry pi
+   env.Append(LIBS = ['glutes', 'GLESv1_CM', 'EGL', 'bcm_host', 'X11', 'png'])
+   env.Append(CCFLAGS=' -DFLX_RPI')
+   env.Append(CPPPATH = '/opt/vc/include:.')
+   env.Append(LIBPATH = '/opt/vc/lib')
 
 env.Program( target = 'nomadic', 
              source = ['main.cpp',
