@@ -28,6 +28,11 @@ public:
 
     /// adds a node onto a parent node (0 is the root)
     int add(int pid, scenenode *n);
+    /// adds immediate mode node referencing existing primitive, 
+    /// will be removed after rendering
+    void add_immediate(scenenode *n);
+    /// delete a node and it's children
+    void remove(int id);
 	/// finds a node in the tree from its ID
     scenenode *find(int id) const;
 	/// moves a node (and all it's children) around the graph
@@ -53,6 +58,7 @@ protected:
 	void dump_walk(scenenode *n, int d) const;
     void render_node_walk(scenenode *n, int depth);
 	scenenode *m_root;
+	scenenode *m_immediate_root;
     int m_current_id;
 };
 

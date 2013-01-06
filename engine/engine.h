@@ -69,6 +69,8 @@ public:
         m_clear_a=a;
     }
 
+    void render_immediate(int id);
+
     u32 load_texture(const char *filename, u32 w, u32 h, u8* data);
     u32 get_texture(const char *filename);
     list *geo_line_intersect(const vec3 &start, const vec3 &end);

@@ -22,6 +22,7 @@
 
 scenegraph::scenegraph() :
     m_root(NULL),
+    m_immediate_root(NULL),
     m_current_id(0)
 {
 	clear();
@@ -42,20 +43,38 @@ void scenegraph::clear()
 	m_root=new scenenode(NULL);
     m_root->m_id=0;
     m_current_id=1;
+
+    if (m_immediate_root!=NULL) 
+    {
+        delete m_immediate_root;
+        m_immediate_root=NULL;
+    }
+	m_immediate_root=new scenenode(NULL);
+    m_immediate_root->m_id=9999;
 }
 
 int scenegraph::add(int pid, scenenode *node)
 {
-	if (m_root!=NULL)
-	{
-		scenenode *parent=find(pid);
-		if (!parent) parent=m_root;
-		node->m_id=m_current_id++;
-		parent->m_children.add_to_front(node);
-		node->m_parent=parent;	
-        return node->m_id;
-    }
-    return -1;
+    scenenode *parent=find(pid);
+    if (!parent) parent=m_root;
+    node->m_id=m_current_id++;
+    parent->m_children.add_to_front(node);
+    node->m_parent=parent;	
+    return node->m_id;
+}
+
+void scenegraph::add_immediate(scenenode *node)
+{
+    scenenode *parent=m_immediate_root;
+    node->m_id=9999;
+    parent->m_children.add_to_front(node);
+    node->m_parent=parent;	
+}
+
+void scenegraph::remove(int id)
+{
+    scenenode *n=find_child(id);
+    if (n!=NULL) delete n;
 }
 
 scenenode *scenegraph::find(int id) const
@@ -141,6 +160,14 @@ void scenegraph::render()
     {
         render_node_walk(m_root,1);
     }
+    
+    // render immediate mode
+    render_node_walk(m_immediate_root,1);
+
+    // clear immediate mode
+    delete m_immediate_root;
+	m_immediate_root=new scenenode(NULL);
+    m_immediate_root->m_id=9999;
 }
 
 void scenegraph::render_node_walk(scenenode *node, int depth)
