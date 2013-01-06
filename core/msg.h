@@ -31,7 +31,17 @@ void msg(const char *str)
 
 
 #else
+#ifdef FLX_RPI
+
+void msg(const char *str) 
+{
+    printf("%s\n",str);
+}
+
+#else
 //-Android------------------------------
+
+
 
 #include <android/log.h>
 
@@ -42,6 +52,7 @@ void msg(const char *str)
 
 #endif
 #endif
+#endif
 
 void msg_vec(vec3 v)
 {
@@ -49,6 +60,5 @@ void msg_vec(vec3 v)
     msg(s);
     delete[] s;
 }
-
 
 #endif // FLX_TYPES

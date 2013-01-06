@@ -137,6 +137,8 @@ string LoadFile(string filename)
     return "";
 }
 
+#ifndef FLX_RPI
+
 void ReshapeCallback(int width, int height)
 {
     w=width;
@@ -167,26 +169,6 @@ void PassiveMotionCallback(int x, int y)
 	char code[256];
 	sprintf(code,"(input-mouse %d %d)",x,y);
     appEval(code);
-}
-
-void DisplayCallback()
-{   
-
-#ifdef FLX_RPI  
-  appRender(0, state->screen_width, state->screen_height);
-  eglSwapBuffers(state->display, state->surface);
-#else
-  appRender(0, w, h);
-  glutSwapBuffers();
-#endif
-
-  static bool first=true;
-  if (first)
-    {
-      appEval((char*)string("(pre-process-run '("+LoadFile("material/startup.scm")+"))").c_str());
-      printf("running script\n");
-      first=false;
-    }
 }
 
 static const string INPUT_CALLBACK="fluxus-input-callback";
@@ -237,8 +219,6 @@ void SpecialKeyboardUpCallback(int key,int x, int y)
 	sprintf(code,"(%s %d %d %d %d %d %d %d)",INPUT_RELEASE_CALLBACK.c_str(),0,-1,key,-1,x,y,0);
     appEval(code);
 }
-
-#ifndef FLX_RPI
 
 void glTranslatex(GLfixed x, GLfixed y, GLfixed z)
 {
@@ -293,6 +273,28 @@ void glMultMatrixx( GLfixed * mat )
 }
 
 #endif // FLX_RPI
+
+//// common //////////////////////////
+
+void DisplayCallback()
+{   
+
+#ifdef FLX_RPI  
+  appRender(0, state->screen_width, state->screen_height);
+  eglSwapBuffers(state->display, state->surface);
+#else
+  appRender(0, w, h);
+  glutSwapBuffers();
+#endif
+
+  static bool first=true;
+  if (first)
+    {
+      appEval((char*)string("(pre-process-run '("+LoadFile("material/startup.scm")+"))").c_str());
+      printf("running script\n");
+      first=false;
+    }
+}
 
 #ifdef FLX_RPI
 
