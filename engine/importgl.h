@@ -31,8 +31,7 @@
 #include <GLES/gl.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-#include <GLES/glutes.h>
-#endif // FLX_RPI
+#else 
 
 
 #ifdef FLX_LINUX
@@ -211,6 +210,9 @@ FNDEF(void, glViewport, (GLint x, GLint y, GLsizei width, GLsizei height));
 
 #endif
 
+#endif // FLX_RPI
+
 #endif // _EE
 
 #endif // !IMPORTGL_H_INCLUDED
+

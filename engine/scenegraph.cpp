@@ -73,7 +73,7 @@ void scenegraph::add_immediate(scenenode *node)
 
 void scenegraph::remove(int id)
 {
-    scenenode *n=find_child(id);
+    scenenode *n=find(id);
     if (n!=NULL) delete n;
 }
 

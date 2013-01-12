@@ -1,16 +1,15 @@
-env = Environment(CCFLAGS='-O3 -ggdb -Wno-write-strings -fpermissive')
-env.Append(CPPPATH = '.')
-
+env = Environment(CCFLAGS='-O3 -ggdb -Wno-write-strings')
 target = ARGUMENTS.get('TARGET','LINUX')
 
 if target=='LINUX':
    env.Append(LIBS = ['glut', 'GL', 'png'])
    env.Append(CCFLAGS=' -DFLX_LINUX')
+   env.Append(CPPPATH = '.')
 
 if target=='RPI':
    # raspberry pi
    env.Append(LIBS = ['glutes', 'GLESv1_CM', 'EGL', 'bcm_host', 'X11', 'png'])
-   env.Append(CCFLAGS=' -DFLX_RPI')
+   env.Append(CCFLAGS=' -DFLX_RPI -fpermissive')
    env.Append(CPPPATH = '/opt/vc/include:.')
    env.Append(LIBPATH = '/opt/vc/lib')
 
