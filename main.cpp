@@ -421,17 +421,17 @@ int main(int argc, char *argv[])
 
     appInit();
 
-    appEval((char*)LoadFile("material/init.scm").c_str());  
-    appEval((char*)LoadFile("material/boot.scm").c_str());
+    appEval((char*)LoadFile("material/flx/init.scm").c_str());  
+    appEval((char*)LoadFile("material/flx/boot.scm").c_str());
 
     long w=0,h=0;
-    unsigned char *tex=LoadPNG("material/font.png",w,h);
+    unsigned char *tex=LoadPNG("material/textures/font.png",w,h);
     appLoadTexture("font.png",w,h,(char *)tex);
 
-    tex=LoadPNG("material/icons.png",w,h);
+    tex=LoadPNG("material/textures/icons.png",w,h);
     appLoadTexture("icons.png",w,h,(char *)tex);
 
-    tex=LoadPNG("material/squib.png",w,h);
+    tex=LoadPNG("material/textures/squib.png",w,h);
     appLoadTexture("squib.png",w,h,(char *)tex);
 
 #ifdef FLX_RPI

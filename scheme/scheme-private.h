@@ -68,8 +68,8 @@ int retcode;
 int tracing;
 
 
-#define CELL_SEGSIZE    5000      /* # of cells in one segment */
-#define CELL_NSEGMENT   10       /* # of segments for cells */
+#define CELL_SEGSIZE    50000      /* # of cells in one segment */
+#define CELL_NSEGMENT   100       /* # of segments for cells */
 char *alloc_seg[CELL_NSEGMENT];
 pointer cell_seg[CELL_NSEGMENT];
 int     last_cell_seg;

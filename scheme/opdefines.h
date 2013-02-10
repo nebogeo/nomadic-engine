@@ -224,4 +224,5 @@
     _OP_DEF(opexe_6, "get-line-intersect",             2,  2,       0,                               OP_GET_LINE_INTERSECT )
     _OP_DEF(opexe_6, "get-screen-size",                0,  0,       0,                               OP_GET_SCREEN_SIZE  )
     _OP_DEF(opexe_6, "minverse",                       1,  1,       0,                               OP_MINVERSE )
+    _OP_DEF(opexe_6, "bitwise-ior",                    3,  3,       0,                               OP_BITWISE_IOR )
 #undef _OP_DEF

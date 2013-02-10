@@ -4469,6 +4469,15 @@ static pointer opexe_6(scheme *sc, enum scheme_opcodes op) {
           }
           s_return(sc,v);
      }
+     case OP_BITWISE_IOR:
+     {
+          s_return(sc,mk_integer(sc,
+                                 ivalue(car(sc->args))|
+                                 ivalue(cadr(sc->args))|
+                                 ivalue(caddr(sc->args))
+                        ));
+     }
+
 ////////////////////
      default:
           snprintf(sc->strbuff,STRBUFFSIZE,"%d: illegal operator", sc->op);
