@@ -12,6 +12,9 @@
  *
  */
 
+#define USE_TRACING 1
+#define USE_MATH 1
+
 #define _SCHEME_SOURCE
 #include "scheme-private.h"
 #ifndef WIN32
@@ -160,9 +163,9 @@ static int num_lt(num a, num b);
 static int num_le(num a, num b);
 
 #if USE_MATH
-static double round_per_R5RS(double x);
+static float round_per_R5RS(float x);
 #endif
-static int is_zero_double(double x);
+static int is_zero_float(float x);
 static INLINE int num_is_integer(pointer p) {
   return ((p)->_object._number.is_fixnum);
 }
@@ -196,7 +199,7 @@ INTERFACE INLINE int is_character(pointer p) { return (type(p)==T_CHARACTER); }
 INTERFACE INLINE char *string_value(pointer p) { return strvalue(p); }
 INLINE num nvalue(pointer p)       { return ((p)->_object._number); }
 INTERFACE long ivalue(pointer p)      { return (num_is_integer(p)?(p)->_object._number.value.ivalue:(long)(p)->_object._number.value.rvalue); }
-INTERFACE double rvalue(pointer p)    { return (!num_is_integer(p)?(p)->_object._number.value.rvalue:(double)(p)->_object._number.value.ivalue); }
+INTERFACE float rvalue(pointer p)    { return (!num_is_integer(p)?(p)->_object._number.value.rvalue:(float)(p)->_object._number.value.ivalue); }
 #define ivalue_unchecked(p)       ((p)->_object._number.value.ivalue)
 #define rvalue_unchecked(p)       ((p)->_object._number.value.rvalue)
 #define set_num_integer(p)   (p)->_object._number.is_fixnum=1;
@@ -386,7 +389,7 @@ static int syntaxnum(pointer p);
 static void assign_proc(scheme *sc, enum scheme_opcodes, char *name);
 
 #define num_ivalue(n)       (n.is_fixnum?(n).value.ivalue:(long)(n).value.rvalue)
-#define num_rvalue(n)       (!n.is_fixnum?(n).value.rvalue:(double)(n).value.ivalue)
+#define num_rvalue(n)       (!n.is_fixnum?(n).value.rvalue:(float)(n).value.ivalue)
 
 static num num_add(num a, num b) {
  num ret;
@@ -527,11 +530,11 @@ static int num_le(num a, num b) {
 
 #if USE_MATH
 /* Round to nearest. Round to even if midway */
-static double round_per_R5RS(double x) {
- double fl=floor(x);
- double ce=ceil(x);
- double dfl=x-fl;
- double dce=ce-x;
+static float round_per_R5RS(float x) {
+ float fl=floor(x);
+ float ce=ceil(x);
+ float dfl=x-fl;
+ float dce=ce-x;
  if(dfl>dce) {
      return ce;
  } else if(dfl<dce) {
@@ -546,7 +549,7 @@ static double round_per_R5RS(double x) {
 }
 #endif
 
-static int is_zero_double(double x) {
+static int is_zero_float(float x) {
  return x<DBL_MIN && x>-DBL_MIN;
 }
 
@@ -955,7 +958,7 @@ INTERFACE pointer mk_integer(scheme *sc, long num) {
   return (x);
 }
 
-INTERFACE pointer mk_real(scheme *sc, double n) {
+INTERFACE pointer mk_real(scheme *sc, float n) {
   pointer x = get_cell(sc,sc->NIL, sc->NIL);
 
   typeflag(x) = (T_NUMBER | T_ATOM);
@@ -1768,7 +1771,7 @@ static INLINE int skipspace(scheme *sc) {
          if(c=='\n') curr_line++;
 #endif
      } while (isspace(c));
-     
+
 /* record it */
 #if SHOW_ERROR_LINE
      sc->load_stack[sc->file_i].curr_line += curr_line;
@@ -3158,7 +3161,7 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
       s_return(sc, mk_real(sc, ceil(rvalue(x))));
 
      case OP_TRUNCATE : {
-      double rvalue_of_x ;
+      float rvalue_of_x ;
           x=car(sc->args);
       rvalue_of_x = rvalue(x) ;
       if (rvalue_of_x > 0) {
@@ -3209,7 +3212,7 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
      v = nvalue(car(sc->args));
        }
        for (; x != sc->NIL; x = cdr(x)) {
-     if (!is_zero_double(rvalue(car(x))))
+     if (!is_zero_float(rvalue(car(x))))
        v=num_div(v,nvalue(car(x)));
      else {
        Error_0(sc,"/: division by zero");
@@ -4274,7 +4277,7 @@ static pointer opexe_6(scheme *sc, enum scheme_opcodes op) {
           u32 h=ivalue(car(sc->args));
           switch (h)
           {
-          case 0: engine::get()->hint(HINT_NONE); break; //??? 
+          case 0: engine::get()->hint(HINT_NONE); break; //???
           case 1: engine::get()->hint(HINT_SOLID); break;
           case 2: engine::get()->hint(HINT_WIRE); break;
           case 3: engine::get()->hint(HINT_NORMAL); break;
@@ -4416,23 +4419,23 @@ static pointer opexe_6(scheme *sc, enum scheme_opcodes op) {
          {
               pointer list=sc->NIL;
               intersect_point *p=static_cast<intersect_point*>(points->m_head);
-              while (p!=NULL) 
+              while (p!=NULL)
               {
                    list=cons(sc,mk_real(sc,p->m_t),list);
-                   pointer blend=sc->NIL;         
+                   pointer blend=sc->NIL;
                    intersect_point::blend *b=
                         static_cast<intersect_point::blend*>
                         (p->m_blends.m_head);
-                   while (b!=NULL) 
+                   while (b!=NULL)
                    {
                         pointer v=mk_vector(sc,3);
                         set_vector_elem(v,0,mk_real(sc,b->m_blend.x));
                         set_vector_elem(v,1,mk_real(sc,b->m_blend.y));
                         set_vector_elem(v,2,mk_real(sc,b->m_blend.z));
-                        
-                        pointer l=sc->NIL;         
+
+                        pointer l=sc->NIL;
                         l=cons(sc,mk_string(sc,b->m_name),v);
-                        
+
                         blend=cons(sc,l,blend);
                         b=static_cast<intersect_point::blend*>(b->m_next);
                    }

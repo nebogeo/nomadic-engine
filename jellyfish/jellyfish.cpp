@@ -51,7 +51,7 @@ s32 jellyfish::peekix(s32 addr) const
 }
 
 void jellyfish::poke(s32 addr, const vec3 &data)
-{	
+{
 	m_heap[addr%m_heap_size]=data;
 }
 
@@ -96,7 +96,7 @@ void jellyfish::run()
 {
     // get pc
     s32 pc=peekix(REG_PCO)%m_heap_size;
-    
+
     // fetch instruction
     vec3 c=peek(pc);
     s32 i=(int)c.x;
@@ -106,31 +106,41 @@ void jellyfish::run()
     set_instr(pc,true);
 
     //printf("%d",i);
-    
+
 	switch(i)
 	{
     case NOP: break;
     case JMP: poke(REG_PCO,vec3(argiy-1,0,0)); break;
-    case JMZ: if ((float)pop().x==0) poke(REG_PCO,vec3(pc+argiy,0,0)); break;
-	case JLT: if (pop().x<pop().x) poke(REG_PCO,vec3(pc+argiy,0,0)); break;
-    case JGT: if (pop().x>pop().x) poke(REG_PCO,vec3(pc+argiy,0,0)); break;
+    case JMZ: if ((float)pop().x==0) poke(REG_PCO,vec3(pc+argiy-1,0,0)); break;
+	case JLT: if ((float)pop().x<(float)pop().x) poke(REG_PCO,vec3(pc+argiy-1,0,0)); break;
+    case JGT: if ((float)pop().x>(float)pop().x) poke(REG_PCO,vec3(pc+argiy-1,0,0)); break;
 	case LDL: push(vec3(c.y,0,0)); break;
 	case LDA: push(peek(argiy)+argiz); break;
 	case LDI: push(peek(peekix(argiy)+argiz)); break;
 	case STA: poke(argiy+argiz,pop()); break;
 	case STI: poke(peekix(argiy)+argiz,pop()); break;
-	case ADD: push(pop()+pop()); break;
-	case SUB: push(pop()-pop()); break;
-	case MUL: 
+	case NRM: push(pop().normalise()); break;
+	case ADDX: { m_heap[argiy%m_heap_size].x+=1.0f; } break;
+	case ADDY: { m_heap[argiy%m_heap_size].y+=c.z; } break;
+	case ADDZ: { m_heap[argiy%m_heap_size].z+=c.z; } break;
+ 	case ADD: push(pop()+pop()); break;
+	case SUB:
+    {
+        // order changes on some compilers :/
+        vec3 a=pop();
+        vec3 b=pop();
+        push(a-b);
+    } break;
+	case MUL:
     {
         vec3 m=pop();
         vec3 v=pop();
         push(v*(float)m.x);
     } break;
-	case DIV: { 
+	case DIV: {
         float v=(float)pop().x;
         if (v!=0) {
-            push(pop()/v); 
+            push(pop()/v);
         } else {
             push(vec3(0,0,0));
         }
@@ -147,12 +157,13 @@ void jellyfish::run()
 	case SQR: push(vec3(sqrt((float)pop().x),0,0)); break;
 	case LEN: push(vec3(pop().mag(),0,0)); break;
 	case DUP: push(top()); break;
+    case DRP: pop(); break;
 	case CMP: push(vec3(pop().x,pop().x,pop().x)); break;
-	case SHF: 
-    { 
-        vec3 shf=pop(); 
+	case SHF:
+    {
+        vec3 shf=pop();
         vec3 src=pop();
-        vec3 dst;        
+        vec3 dst;
         dst.x=(&src.x)[((int)fabs(shf.x))%3];
         if ((float)shf.x<0) dst.x=-dst.x;
         dst.y=(&src.x)[((int)fabs(shf.y))%3];
@@ -161,7 +172,7 @@ void jellyfish::run()
         if ((float)shf.z<0) dst.z=-dst.z;
         push(dst);
     } break;
-	case BLD: 
+	case BLD:
     {
         vec3 ret;
         for (int i=0; i<3; i++)
@@ -172,6 +183,10 @@ void jellyfish::run()
         push(ret);
     } break;
 	case RET: poke(REG_PCO,vec3((int)pop().x,0,0)); break;
+	case DBG:
+    {
+        msg_vec(pop());
+    } break;
     default: set_instr(pc,false);
    	};
 
@@ -179,8 +194,8 @@ void jellyfish::run()
 
 //    print_instr(pc);
 //    printf("\n");
-    
-    // inc pc 
+
+    // inc pc
     // todo - speed?
     poke(REG_PCO,peek(REG_PCO)+vec3(1,0,0));
 }
@@ -224,7 +239,7 @@ void jellyfish::pretty_dump() const
             {
                 printf("%03d   ",n);
             }
-            
+
             print_instr(n);
             printf("\n");
         }
@@ -258,7 +273,7 @@ void jellyfish::print_instr(s32 addr) const
 
     if (m_instruction[addr])
     {
-        
+
         switch((int)i.x)
         {
         case NOP: printf("nop"); break;

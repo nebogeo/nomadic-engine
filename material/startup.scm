@@ -1,1 +1,1 @@
-(load "aljazari/octree-test.scm")
+/home/dave/code/nomadic-android/assets/startup.scm

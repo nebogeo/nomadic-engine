@@ -161,7 +161,7 @@ char *string_value(pointer p);
 int is_number(pointer p);
 num nvalue(pointer p);
 long ivalue(pointer p);
-double rvalue(pointer p);
+float rvalue(pointer p);
 int is_integer(pointer p);
 int is_real(pointer p);
 int is_character(pointer p);

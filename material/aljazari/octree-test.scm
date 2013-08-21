@@ -8,11 +8,14 @@
     (octree-compress
      (octree-compress
       (octree-compress
-       (octree-fill-sphere 
-        (make-empty-octree) 
-        (vector 16 16 16) 20 0)))))))
+        (octree-delete-box
+         (octree-fill-sphere 
+          (make-empty-octree) 
+          (vector 16 16 16) 20 0)
+         (vector 0 16 0) (vector 32 32 32))
+  ))))))
 
-(define root (build-cube))
+(define root (build-locator))
 (parent root)
 
 (define block-view (with-state

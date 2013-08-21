@@ -9,7 +9,9 @@
 extern "C" {
 #endif
 
+#define USE_TRACING 1
 #define USE_MATH 1
+
 
 /*
  * Default values for #define'd symbols
@@ -125,7 +127,7 @@ typedef struct num {
      char is_fixnum;
      union {
           long ivalue;
-          double rvalue;
+          float rvalue;
      } value;
 } num;
 
@@ -151,7 +153,7 @@ typedef pointer (*foreign_func)(scheme *, pointer);
 
 pointer _cons(scheme *sc, pointer a, pointer b, int immutable);
 pointer mk_integer(scheme *sc, long num);
-pointer mk_real(scheme *sc, double num);
+pointer mk_real(scheme *sc, float num);
 pointer mk_symbol(scheme *sc, const char *name);
 pointer gensym(scheme *sc);
 pointer mk_string(scheme *sc, const char *str);
@@ -171,7 +173,7 @@ struct scheme_interface {
   pointer (*immutable_cons)(scheme *sc, pointer a, pointer b);
   pointer (*reserve_cells)(scheme *sc, int n);
   pointer (*mk_integer)(scheme *sc, long num);
-  pointer (*mk_real)(scheme *sc, double num);
+  pointer (*mk_real)(scheme *sc, float num);
   pointer (*mk_symbol)(scheme *sc, const char *name);
   pointer (*gensym)(scheme *sc);
   pointer (*mk_string)(scheme *sc, const char *str);
@@ -187,7 +189,7 @@ struct scheme_interface {
   int (*is_number)(pointer p);
   num (*nvalue)(pointer p);
   long (*ivalue)(pointer p);
-  double (*rvalue)(pointer p);
+  float (*rvalue)(pointer p);
   int (*is_integer)(pointer p);
   int (*is_real)(pointer p);
   int (*is_character)(pointer p);

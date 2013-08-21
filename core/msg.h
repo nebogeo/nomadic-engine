@@ -20,7 +20,7 @@
 #ifdef FLX_LINUX
 //-Linux--------------------------------
 
-void msg(const char *str) 
+inline void msg(const char *str)
 {
     printf("%s\n",str);
 }
@@ -33,7 +33,7 @@ void msg(const char *str)
 #else
 #ifdef FLX_RPI
 
-void msg(const char *str) 
+inline void msg(const char *str)
 {
     printf("%s\n",str);
 }
@@ -45,7 +45,7 @@ void msg(const char *str)
 
 #include <android/log.h>
 
-void msg(const char *str) 
+inline void msg(const char *str)
 {
     __android_log_write(ANDROID_LOG_ERROR,"Fluxus",str);
 }
@@ -54,7 +54,7 @@ void msg(const char *str)
 #endif
 #endif
 
-void msg_vec(vec3 v)
+inline void msg_vec(vec3 v)
 {
     char *s=v.as_str();
     msg(s);

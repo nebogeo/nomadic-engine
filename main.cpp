@@ -94,7 +94,7 @@ unsigned char* LoadPNG(const string filename,long &width, long &height)
 		// make a new contiguous array to store the pixels
 		data=new unsigned char[rb*height];
 		int p=0;
-		for (int row = 0; row<height; row++) 
+		for (int row = 0; row<height; row++)
 		{
 			for (unsigned int i=0; i<rb; i++)
 			{
@@ -197,7 +197,7 @@ void KeyboardCallback(unsigned char key,int x, int y)
 void KeyboardUpCallback(unsigned char key,int x, int y)
 {
 	char code[256];
-	if (key > 0 && key<0x80) 
+	if (key > 0 && key<0x80)
     { // key is 0 on ctrl+2
 		sprintf(code,"(%s #\\%c %d %d %d %d %d %d)",INPUT_RELEASE_CALLBACK.c_str(),key,-1,-1,-1,x,y,0);
         appEval(code);
@@ -277,9 +277,9 @@ void glMultMatrixx( GLfixed * mat )
 //// common //////////////////////////
 
 void DisplayCallback()
-{   
+{
 
-#ifdef FLX_RPI  
+#ifdef FLX_RPI
   appRender(0, state->screen_width, state->screen_height);
   eglSwapBuffers(state->display, state->surface);
 #else
@@ -321,7 +321,7 @@ static void init_ogl_rpi(RPI_STATE_T *state)
       EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
       EGL_NONE
    };
-   
+
    EGLConfig config;
 
    // get an EGL display connection
@@ -348,24 +348,24 @@ static void init_ogl_rpi(RPI_STATE_T *state)
    dst_rect.y = 0;
    dst_rect.width = state->screen_width;
    dst_rect.height = state->screen_height;
-      
+
    src_rect.x = 0;
    src_rect.y = 0;
    src_rect.width = state->screen_width << 16;
-   src_rect.height = state->screen_height << 16;        
+   src_rect.height = state->screen_height << 16;
 
    dispman_display = vc_dispmanx_display_open( 0 /* LCD */);
    dispman_update = vc_dispmanx_update_start( 0 );
-         
+
    dispman_element = vc_dispmanx_element_add ( dispman_update, dispman_display,
       0/*layer*/, &dst_rect, 0/*src*/,
 					       &src_rect, DISPMANX_PROTECTION_NONE, 0 /*alpha*/, 0/*clamp*/, 0/*transform*/);
-      
+
    nativewindow.element = dispman_element;
    nativewindow.width = state->screen_width;
    nativewindow.height = state->screen_height;
    vc_dispmanx_update_submit_sync( dispman_update );
-      
+
    state->surface = eglCreateWindowSurface( state->display, config, &nativewindow, NULL );
    assert(state->surface != EGL_NO_SURFACE);
 
@@ -389,7 +389,7 @@ int main(int argc, char *argv[])
 {
 #ifdef FLX_RPI
    bcm_host_init();
-   
+
    // Clear application state
    memset( state, 0, sizeof( *state ) );
 
@@ -421,7 +421,7 @@ int main(int argc, char *argv[])
 
     appInit();
 
-    appEval((char*)LoadFile("material/flx/init.scm").c_str());  
+    appEval((char*)LoadFile("material/flx/init.scm").c_str());
     appEval((char*)LoadFile("material/flx/boot.scm").c_str());
 
     long w=0,h=0;
@@ -446,5 +446,3 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-
-

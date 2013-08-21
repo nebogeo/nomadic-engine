@@ -27,10 +27,10 @@
 #define NOP 0
 #define JMP 1
 #define JMZ 2
-#define JLT 3 
+#define JLT 3
 #define JGT 4
 #define LDL 5
-#define LDA 6 
+#define LDA 6
 #define LDI 7
 #define STA 8
 #define STI 9
@@ -46,10 +46,16 @@
 #define SQR 19
 #define LEN 20
 #define DUP 21
-#define CMP 22
-#define SHF 23
-#define BLD 24
-#define RET 25
+#define DRP 22
+#define CMP 23
+#define SHF 24
+#define BLD 25
+#define RET 26
+#define DBG 27
+#define NRM 28
+#define ADDX 29
+#define ADDY 30
+#define ADDZ 31
 
 // registers
 #define REG_PCO 100
@@ -61,6 +67,7 @@
 #define REG_SCC 106
 #define REG_SDR 107
 #define REG_AND 108
+#define REG_INS 109
 //...
 #define REG_MDL 120
 //...
@@ -69,7 +76,7 @@
 #define REG_STK 201
 #define REG_NDT 256
 
-class jellyfish 
+class jellyfish
 {
 public:
 	jellyfish(vec3 *heap_ptr, u32 heap_size);
@@ -91,7 +98,7 @@ public:
 	void simple_dump() const;
 	void pretty_dump() const;
     void trash();
-    
+
 private:
 
 	vec3 *m_heap;
@@ -100,6 +107,3 @@ private:
 };
 
 #endif
-
-
-

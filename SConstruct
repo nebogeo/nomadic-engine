@@ -1,4 +1,4 @@
-env = Environment(CCFLAGS='-O3 -ggdb -Wno-write-strings')
+env = Environment(CCFLAGS='-O3 -std=gnu++0x -ggdb -DUSE_MATH=1 -Wno-write-strings')
 target = ARGUMENTS.get('TARGET','LINUX')
 
 if target=='LINUX':
@@ -13,7 +13,7 @@ if target=='RPI':
    env.Append(CPPPATH = '/opt/vc/include:.')
    env.Append(LIBPATH = '/opt/vc/lib')
 
-env.Program( target = 'nomadic', 
+env.Program( target = 'nomadic',
              source = ['main.cpp',
                        'core/fixed.cpp',
                        'core/list.cpp',

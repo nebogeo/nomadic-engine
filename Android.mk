@@ -4,7 +4,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := nomadic
 
-LOCAL_CFLAGS := -DANDROID_NDK -DDISABLE_IMPORTGL -O3 --fast-math -Wno-write-strings
+LOCAL_CFLAGS := -DANDROID_NDK -DUSE_MATH -DDISABLE_IMPORTGL -O3 --fast-math -Wno-write-strings
 
 LOCAL_SRC_FILES := \
 	core/list.cpp \
@@ -21,7 +21,7 @@ LOCAL_SRC_FILES := \
 	scheme/scheme.cpp \
 	jellyfish/jellyfish.cpp \
 	jellyfish/jellyfish_primitive.cpp \
-    app-android.c 
+    app-android.c
 
 LOCAL_LDLIBS := -lGLESv1_CM -ldl -llog
 
