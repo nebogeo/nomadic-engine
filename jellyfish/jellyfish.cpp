@@ -45,15 +45,18 @@ vec3 jellyfish::peek(s32 addr) const
 	return m_heap[addr%m_heap_size];
 }
 
-s32 jellyfish::peekix(s32 addr) const
-{
-    return (int)peek(addr).x;
-}
+s32 jellyfish::peekix(s32 addr) const { return (int)peek(addr).x; }
+s32 jellyfish::peekiy(s32 addr) const { return (int)peek(addr).y; }
+s32 jellyfish::peekiz(s32 addr) const { return (int)peek(addr).z; }
 
 void jellyfish::poke(s32 addr, const vec3 &data)
 {
 	m_heap[addr%m_heap_size]=data;
 }
+
+void jellyfish::pokex(s32 addr, flx_real v) { vec3 data=peek(addr); data.x = v; poke(addr,data); }
+void jellyfish::pokey(s32 addr, flx_real v) { vec3 data=peek(addr); data.y = v; poke(addr,data); }
+void jellyfish::pokez(s32 addr, flx_real v) { vec3 data=peek(addr); data.z = v; poke(addr,data); }
 
 bool jellyfish::is_instr(s32 addr) const
 {
@@ -70,32 +73,32 @@ void jellyfish::push(const vec3 &data)
 //    printf("push %f %f %f\n",(float)(data.x),
 //           (float)(data.y),
 //           (float)(data.z));
-    poke(peekix(REG_STP)+REG_STK,data);
-    poke(REG_STP,peek(REG_STP)+vec3(1,0,0));
+    poke(peekiz(REG_CONTROL)+REG_STK,data);
+    poke(REG_CONTROL,peek(REG_CONTROL)-vec3(0,0,1));
 }
 
 vec3 jellyfish::pop()
 {
-    poke(REG_STP,peek(REG_STP)-vec3(1,0,0));
-    vec3 data=peek(peekix(REG_STP)+REG_STK);
+    poke(REG_CONTROL,peek(REG_CONTROL)+vec3(0,0,1));
+    vec3 data=peek(peekiz(REG_CONTROL)+REG_STK);
 
 ///    printf("pop %f %f %f\n",(float)data.x,
 //           (float)data.y,
 //           (float)data.z);
 
-    if (peekix(REG_STP)<0) poke(REG_STP,vec3(0,0,0));
+    if (peekiz(REG_CONTROL)<0) pokez(REG_CONTROL,0);
     return data;
 }
 
 vec3 jellyfish::top()
 {
-    return peek(peekix(REG_STP)+REG_STK-1);
+    return peek(peekiz(REG_CONTROL)+REG_STK-1);
 }
 
 void jellyfish::run()
 {
     // get pc
-    s32 pc=peekix(REG_PCO)%m_heap_size;
+    s32 pc=peekix(REG_CONTROL)%m_heap_size;
 
     // fetch instruction
     vec3 c=peek(pc);
@@ -110,10 +113,10 @@ void jellyfish::run()
 	switch(i)
 	{
     case NOP: break;
-    case JMP: poke(REG_PCO,vec3(argiy-1,0,0)); break;
-    case JMZ: if ((float)pop().x==0) poke(REG_PCO,vec3(pc+argiy-1,0,0)); break;
-	case JLT: if ((float)pop().x<(float)pop().x) poke(REG_PCO,vec3(pc+argiy-1,0,0)); break;
-    case JGT: if ((float)pop().x>(float)pop().x) poke(REG_PCO,vec3(pc+argiy-1,0,0)); break;
+    case JMP: pokex(REG_CONTROL,argiy-1); break;
+    case JMZ: if ((float)pop().x==0) pokex(REG_CONTROL,pc+argiy-1); break;
+	case JLT: if ((float)pop().x<(float)pop().x) pokex(REG_CONTROL,pc+argiy-1); break;
+    case JGT: if ((float)pop().x>(float)pop().x) pokex(REG_CONTROL,pc+argiy-1); break;
 	case LDL: push(vec3(c.y,0,0)); break;
 	case LDA: push(peek(argiy)+argiz); break;
 	case LDI: push(peek(peekix(argiy)+argiz)); break;
@@ -182,7 +185,7 @@ void jellyfish::run()
         }
         push(ret);
     } break;
-	case RET: poke(REG_PCO,vec3((int)pop().x,0,0)); break;
+	case RET: pokex(REG_CONTROL,(int)pop().x); break;
 	case DBG:
     {
         msg_vec(pop());
@@ -197,12 +200,12 @@ void jellyfish::run()
 
     // inc pc
     // todo - speed?
-    poke(REG_PCO,peek(REG_PCO)+vec3(1,0,0));
+    pokex(REG_CONTROL,peekix(REG_CONTROL)+1);
 }
 
 void jellyfish::simple_dump() const
 {
-    s32 pc=peekix(REG_PCO)%m_heap_size;
+    s32 pc=peekix(REG_CONTROL)%m_heap_size;
 	for (u32 n=0; n<m_heap_size; n++)
 	{
         if (n==pc)
@@ -222,8 +225,8 @@ void jellyfish::simple_dump() const
 void jellyfish::pretty_dump() const
 {
     // get pc
-    s32 pc=peekix(REG_PCO)%m_heap_size;
-    s32 stop=peekix(REG_STP);
+    s32 pc=peekix(REG_CONTROL)%m_heap_size;
+    s32 stop=peekiz(REG_CONTROL);
 
     printf("-- prog -- pc:%d\n",pc);
 

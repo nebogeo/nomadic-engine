@@ -36,11 +36,15 @@ primitive::primitive(unsigned int size, type t)
     }
     #endif
 
+    // store data contiguously
+    vec3* data = new vec3[m_size*4];
+    // todo: EE code: (vec3*)memalign(128, sizeof(vec3) * m_size
     m_size=size;
-    pdata_add("p");
-    pdata_add("n");
-    pdata_add("c");
-    pdata_add("t");
+
+    pdata_add("p",data);
+    pdata_add("n",data+m_size);
+    pdata_add("c",data+m_size*2);
+    pdata_add("t",data+m_size*3);
     m_colours_=new u8[4*m_size];
     m_positions=get_pdata_arr("p");
     m_normals=get_pdata_arr("n");
@@ -54,10 +58,13 @@ primitive::primitive()
 #ifndef _EE
     m_type=GL_TRIANGLES;
 #endif
-    pdata_add("p");
-    pdata_add("n");
-    pdata_add("c");
-    pdata_add("t");
+
+    vec3* data = new vec3[m_size*4];
+    pdata_add("p",data);
+    pdata_add("n",data+m_size);
+    pdata_add("c",data+m_size*2);
+    pdata_add("t",data+m_size*3);
+
     m_colours_=new u8[4*m_size];
 
     m_positions=get_pdata_arr("p");
@@ -67,7 +74,7 @@ primitive::primitive()
 
     int p=0;
     for (int i=0; i<m_size; i++)
-    { 
+    {
         int index = cube_triangles[p];
 
         m_positions[i].x = cube_vertices[index*3];
@@ -99,13 +106,13 @@ primitive::~primitive()
     delete m_colours;
 }
 
-void primitive::pdata_add(const char* name)
+void primitive::pdata_add(const char* name, vec3 *ptr)
 {
     if (get_pdata_arr(name)!=NULL) return;
 #ifdef _EE
     m_pdata.add_to_front(new pdata_arr(name, (vec3*)memalign(128, sizeof(vec3) * m_size)));
 #else
-    m_pdata.add_to_front(new pdata_arr(name, new vec3[m_size]));
+    m_pdata.add_to_front(new pdata_arr(name, ptr));
 #endif
 }
 
@@ -136,11 +143,11 @@ vec3 *primitive::pdata_get(const char* name, int i)
     return &arr[i];
 }
 
-void primitive::set_colour(flx_real r, flx_real g, 
+void primitive::set_colour(flx_real r, flx_real g,
                            flx_real b, flx_real a)
 {
     for (int i=0; i<m_size; i++)
-    { 
+    {
         m_colours[i].x = r;
         m_colours[i].y = g;
         m_colours[i].z = b;
@@ -159,7 +166,7 @@ void primitive::apply(const mat44 &m)
 list *primitive::intersect(const vec3 &start, const vec3 &end)
 {
     return intersect_tristrip(start,end);
-    
+
     switch (m_type)
     {
     case GL_TRIANGLE_STRIP: return intersect_tristrip(start,end);
@@ -187,7 +194,7 @@ list *primitive::intersect_tristrip(const vec3 &start, const vec3 &end)
         float t = intersect_line_triangle(start,end,*pdata_get("p",i1),
                                           *pdata_get("p",i2),
                                           *pdata_get("p",i3),bary);
-        
+
 		if (t>0)
 		{
             points->add_to_front(interpolate_pdata(&m_pdata,t,bary,i1,i2,i3));
@@ -209,7 +216,7 @@ bool primitive::intersect_tristrip_fast(const vec3 &start, const vec3 &end)
         flx_real t = intersect_line_triangle(start,end,*pdata_get("p",i1),
                                              *pdata_get("p",i2),
                                              *pdata_get("p",i3),bary);
-       
+
 		if (t>0.0)
 		{
             return true;
@@ -257,37 +264,37 @@ void primitive::render(u32 hints)
     {
         glDrawArrays(m_type, 0, m_size);
     }
-    
+
     if (hints&HINT_WIRE)
     {
         glDisableClientState(GL_COLOR_ARRAY);
         glColor3f(0,0,0);
         glDrawArrays(GL_LINE_STRIP, 0, m_size);
     }
-    
+
     delete[] fltpos;
     delete[] fltnrm;
     delete[] fltcol;
     delete[] flttex;
 
 #else
-    
+
     glVertexPointer(3, GL_FIXED, 0, &m_positions[0]);
-    
+
     if (m_colours!=NULL)
     {
-        for (int i=0; i<m_size; i++) 
+        for (int i=0; i<m_size; i++)
         {
             m_colours_[i*4]=(float)m_colours[i].x*255.0f;
             m_colours_[i*4+1]=(float)m_colours[i].y*255.0f;
             m_colours_[i*4+2]=(float)m_colours[i].z*255.0f;
-            m_colours_[i*4+3]=255; 
+            m_colours_[i*4+3]=255;
         }
-        
+
         glColorPointer(4, GL_UNSIGNED_BYTE, 0, m_colours_);
         glEnableClientState(GL_COLOR_ARRAY);
     }
-    else 
+    else
     {
         glDisableClientState(GL_COLOR_ARRAY);
     }
@@ -311,12 +318,12 @@ void primitive::render(u32 hints)
     {
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     }
-  
+
     if (hints&HINT_SOLID)
     {
         glDrawArrays(m_type, 0, m_size);
     }
-    
+
     if (hints&HINT_WIRE)
     {
         glDisableClientState(GL_COLOR_ARRAY);

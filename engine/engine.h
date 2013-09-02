@@ -28,12 +28,12 @@ public:
     // singleton crap
     static void init();
     static engine *get();
- 
+
     void push();
     void pop();
     void grab(int id);
     void ungrab();
-    
+
     void identity();
     void translate(float x, float y, float z);
     void scale(float x, float y, float z);
@@ -59,7 +59,7 @@ public:
     int build_cube();
     int build_text(char *str);
     int build_polygons(unsigned int size, int type);
-    int build_jellyfish();
+    int build_jellyfish(u32 size);
     void parent(int p);
     void clear_colour(float r, float g, float b, float a)
     {
@@ -79,9 +79,9 @@ public:
     void render();
 
     float m_clear_r,m_clear_g,m_clear_b,m_clear_a;
-    
+
 private:
-    
+
     list m_state_stack;
     list m_grab_stack;
 
@@ -120,5 +120,3 @@ private:
 };
 
 #endif
-
-

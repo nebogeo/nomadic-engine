@@ -4315,7 +4315,7 @@ static pointer opexe_6(scheme *sc, enum scheme_opcodes op) {
          s_return(sc,mk_integer(sc,engine::get()->build_text(
                                      string_value(car(sc->args)))));
      case OP_BUILD_JELLYFISH:
-         s_return(sc,mk_integer(sc,engine::get()->build_jellyfish()));
+         s_return(sc,mk_integer(sc,engine::get()->build_jellyfish(ivalue(car(sc->args)))));
      case OP_BUILD_POLYGONS:
          s_return(sc,mk_integer(sc,engine::get()->build_polygons(
                                     ivalue(car(sc->args)),

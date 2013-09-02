@@ -20,11 +20,10 @@
 #include "../engine/scenenode.h"
 #include "../core/msg.h"
 
-jellyfish_primitive::jellyfish_primitive():
-    primitive(256, TRIANGLES),
-    m_machine(m_positions,256)
+jellyfish_primitive::jellyfish_primitive(u32 size):
+    primitive(size, TRIANGLES),
+    m_machine(m_positions,1024)
 {
-
 }
 
 jellyfish_primitive::~jellyfish_primitive()
@@ -34,7 +33,7 @@ jellyfish_primitive::~jellyfish_primitive()
 
 void jellyfish_primitive::render(u32 hints)
 {
-    for (int i=0; i<m_machine.peekix(REG_INS); i++) {
+    for (int i=0; i<m_machine.peekiy(REG_CONTROL); i++) {
         m_machine.run();
         //    m_machine.pretty_dump();
     }
@@ -49,7 +48,7 @@ void jellyfish_primitive::render(u32 hints)
     vec3* colours=m_colours;
     vec3* tex=m_tex;
 
-    m_size=REG_MDL_END-REG_MDL;
+    m_size=m_machine.peekix(REG_GRAPHICS);
     m_positions=positions+REG_MDL;
     m_normals=normals+REG_MDL;
     m_colours=colours+REG_MDL;

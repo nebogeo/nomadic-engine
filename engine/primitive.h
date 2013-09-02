@@ -24,7 +24,7 @@
 #ifndef FLX_PRIMITIVE
 #define FLX_PRIMITIVE
 
-class primitive 
+class primitive
 {
 public:
     enum type {TRIANGLES,TRISTRIP};
@@ -35,16 +35,16 @@ public:
     virtual void render(u32 hints);
 
     void make_cube();
-    void set_colour(flx_real r, flx_real g, 
+    void set_colour(flx_real r, flx_real g,
                     flx_real b, flx_real a);
     void apply(const mat44 &m);
     unsigned int pdata_size() { return m_size; }
-    void pdata_add(const char* name);
-    vec3 *get_pdata_arr(const char* name); 
+    void pdata_add(const char* name, vec3 *ptr);
+    vec3 *get_pdata_arr(const char* name);
     void pdata_set(const char* name, int i, vec3 v);
     vec3 *pdata_get(const char* name, int i);
 
-    // delete my list please, see geometry.h:points 
+    // delete my list please, see geometry.h:points
     list *intersect(const vec3 &start, const vec3 &end);
     bool intersect_fast(const vec3 &start, const vec3 &end);
 

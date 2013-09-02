@@ -23,7 +23,7 @@
 class jellyfish_primitive : public primitive
 {
 public:
-    jellyfish_primitive();
+    jellyfish_primitive(u32 size);
     ~jellyfish_primitive();
 
     virtual void render(u32 hints);

@@ -202,7 +202,7 @@ void engine::colour(float r, float g, float b, float a)
         scenenode *n = grabbed_node();
         if (n && n->m_primitive!=NULL)
         {
-            n->m_primitive->set_colour(r,g,b,a);       
+            n->m_primitive->set_colour(r,g,b,a);
         }
     }
     else
@@ -219,7 +219,7 @@ void engine::hint(u32 hint)
     if (grabbed())
     {
         scenenode *n = grabbed_node();
-        if (n) 
+        if (n)
         {
             if (hint==0) n->m_hints=0;
             else n->m_hints|=hint;
@@ -275,7 +275,7 @@ void engine::parent(int p)
     }
 }
 
-void engine::setup_state(scenenode *n) 
+void engine::setup_state(scenenode *n)
 {
     n->m_tx=state_top()->m_tx;
     n->m_primitive->set_colour(state_top()->m_colr,
@@ -304,9 +304,9 @@ int engine::build_text(char *str)
     return m_sg->add(state_top()->m_parent,n);
 }
 
-int engine::build_jellyfish()
+int engine::build_jellyfish(u32 size)
 {
-    scenenode *n=new scenenode(new jellyfish_primitive());
+    scenenode *n=new scenenode(new jellyfish_primitive(size));
     setup_state(n);
     return m_sg->add(state_top()->m_parent,n);
 }
@@ -407,7 +407,10 @@ void engine::pdata_add(const char *name)
         scenenode *n = grabbed_node();
         if (n && n->m_primitive!=NULL)
         {
-            n->m_primitive->pdata_add(name);
+            vec3* data = new vec3[n->m_primitive->pdata_size()];
+            // todo: EE code: (vec3*)memalign(128, sizeof(vec3) * m_size
+
+            n->m_primitive->pdata_add(name,data);
         }
     }
 }
@@ -481,13 +484,13 @@ void engine::render()
 
     flx_real buf[4];
 	glEnable(GL_LIGHT0);
-    buf[0]=0.1f; buf[1]=0.1f; buf[2]=0.1f;  buf[3]=1.f; 
+    buf[0]=0.1f; buf[1]=0.1f; buf[2]=0.1f;  buf[3]=1.f;
 	glLightxv(GL_LIGHT0, GL_AMBIENT, (GLfixed *)buf);
-    buf[0]=0.5f; buf[1]=0.5f; buf[2]=0.5f;  buf[3]=1.f; 
+    buf[0]=0.5f; buf[1]=0.5f; buf[2]=0.5f;  buf[3]=1.f;
 	glLightxv(GL_LIGHT0, GL_DIFFUSE, (GLfixed *)buf);
-    buf[0]=1.0f; buf[1]=1.0f; buf[2]=1.0f;  buf[3]=1.1f; 
+    buf[0]=1.0f; buf[1]=1.0f; buf[2]=1.0f;  buf[3]=1.1f;
 	glLightxv(GL_LIGHT0, GL_SPECULAR, (GLfixed *)buf);
-    buf[0]=0.0f; buf[1]=0.0f; buf[2]=0.0f;  buf[3]=1.1f; 
+    buf[0]=0.0f; buf[1]=0.0f; buf[2]=0.0f;  buf[3]=1.1f;
     glLightxv(GL_LIGHT0, GL_POSITION, (GLfixed *)buf);
 
    glMultMatrixx((GLfixed*)&m_camera_tx.m[0][0]);
@@ -495,6 +498,3 @@ void engine::render()
 #endif
     m_sg->render();
 }
-    
-
-

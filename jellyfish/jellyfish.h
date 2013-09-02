@@ -58,23 +58,12 @@
 #define ADDZ 31
 
 // registers
-#define REG_PCO 100
-#define REG_SPD 101
-#define REG_POS 102
-#define REG_VEL 103
-#define REG_COL 104
-#define REG_NIT 105
-#define REG_SCC 106
-#define REG_SDR 107
-#define REG_AND 108
-#define REG_INS 109
-//...
-#define REG_MDL 120
-//...
-#define REG_MDL_END 199
-#define REG_STP 200
-#define REG_STK 201
-#define REG_NDT 256
+#define REG_CONTROL 0   // pc, cycles, stack
+#define REG_GRAPHICS 1  // size, [type, tex]
+#define REG_POSITION 2
+#define REG_SENSOR_ADDR 3
+#define REG_STK 1023
+#define REG_MDL 512
 
 class jellyfish
 {
@@ -85,6 +74,11 @@ public:
 	// global
 	vec3 peek(s32 addr) const;
     s32 peekix(s32 addr) const;
+    s32 peekiy(s32 addr) const;
+    s32 peekiz(s32 addr) const;
+    void pokex(s32 addr, flx_real v);
+    void pokey(s32 addr, flx_real v);
+    void pokez(s32 addr, flx_real v);
 	void poke(s32 addr, const vec3 &data);
 	bool is_instr(s32 addr) const;
 	void set_instr(s32 addr,bool s);
