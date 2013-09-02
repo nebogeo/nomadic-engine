@@ -32,6 +32,8 @@ public:
     primitive();
     ~primitive();
 
+    virtual void build();
+
     virtual void render(u32 hints);
 
     void make_cube();

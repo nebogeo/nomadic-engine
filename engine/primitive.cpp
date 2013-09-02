@@ -37,9 +37,16 @@ primitive::primitive(unsigned int size, type t)
     #endif
 
     // store data contiguously
-    vec3* data = new vec3[m_size*4];
-    // todo: EE code: (vec3*)memalign(128, sizeof(vec3) * m_size
     m_size=size;
+}
+
+// (called in scenenode ctr)
+void primitive::build()
+{
+    cerr<<"building"<<endl;
+
+    // todo: EE code: (vec3*)memalign(128, sizeof(vec3) * m_size
+    vec3 *data = new vec3[m_size*4];
 
     pdata_add("p",data);
     pdata_add("n",data+m_size);

@@ -26,10 +26,11 @@ public:
     jellyfish_primitive(u32 size);
     ~jellyfish_primitive();
 
+    virtual void build();
     virtual void render(u32 hints);
 
 private:
-    jellyfish m_machine;
+    jellyfish *m_machine;
 };
 
 #endif

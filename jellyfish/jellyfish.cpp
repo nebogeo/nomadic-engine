@@ -45,9 +45,9 @@ vec3 jellyfish::peek(s32 addr) const
 	return m_heap[addr%m_heap_size];
 }
 
-s32 jellyfish::peekix(s32 addr) const { return (int)peek(addr).x; }
-s32 jellyfish::peekiy(s32 addr) const { return (int)peek(addr).y; }
-s32 jellyfish::peekiz(s32 addr) const { return (int)peek(addr).z; }
+s32 jellyfish::peekix(s32 addr) const { return (s32)peek(addr).x; }
+s32 jellyfish::peekiy(s32 addr) const { return (s32)peek(addr).y; }
+s32 jellyfish::peekiz(s32 addr) const { return (s32)peek(addr).z; }
 
 void jellyfish::poke(s32 addr, const vec3 &data)
 {
@@ -73,14 +73,16 @@ void jellyfish::push(const vec3 &data)
 //    printf("push %f %f %f\n",(float)(data.x),
 //           (float)(data.y),
 //           (float)(data.z));
-    poke(peekiz(REG_CONTROL)+REG_STK,data);
-    poke(REG_CONTROL,peek(REG_CONTROL)-vec3(0,0,1));
+    s32 stak=peekiz(REG_CONTROL);
+    poke(REG_STK-stak,data);
+    pokez(REG_CONTROL,stak+1);
 }
 
 vec3 jellyfish::pop()
 {
-    poke(REG_CONTROL,peek(REG_CONTROL)+vec3(0,0,1));
-    vec3 data=peek(peekiz(REG_CONTROL)+REG_STK);
+    s32 stak=peekiz(REG_CONTROL);
+    pokez(REG_CONTROL,stak-1);
+    vec3 data=peek(REG_STK-peekiz(REG_CONTROL));
 
 ///    printf("pop %f %f %f\n",(float)data.x,
 //           (float)data.y,
@@ -108,7 +110,7 @@ void jellyfish::run()
 
     set_instr(pc,true);
 
-    //printf("%d",i);
+    //printf("%d\n",i);
 
 	switch(i)
 	{
@@ -249,10 +251,10 @@ void jellyfish::pretty_dump() const
 	}
 
     printf("-- stk -- stk:%d\n",stop);
-	for (u32 n=REG_STK+stop-2; n<REG_STK+stop+2; n++)
+	for (u32 n=(REG_STK-stop)-2; n<(REG_STK-stop)+2; n++)
 	{
         char txt[2048];
-        if (n==stop+REG_STK)
+        if (n==REG_STK-stop)
         {
             sprintf(txt,"%s","> %f %f %f : %d\n");
         }
